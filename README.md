@@ -68,6 +68,6 @@ lazy val root = (project in file("."))
   .settings(commonSettings)
 ```
 
-- Build your fatJar file with `sbt assembly`
+- Build your fatJar file with `sbt assembly`, it will be in `target/scala-2.11`
 
 - Submit the fatJar using the url from last step: `spark-submit --class Main --master <sparkMasterURL> --deploy-mode client simudyne-fatjar.jar`
