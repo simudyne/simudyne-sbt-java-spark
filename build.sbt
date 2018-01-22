@@ -14,5 +14,23 @@ lazy val simudyneVersion = "2.0.0-alpha.7"
 libraryDependencies ++= Seq(
   "simudyne" %% "simudyne-nexus-server" % simudyneVersion,
   "simudyne" %% "simudyne-core" % simudyneVersion,
-  "simudyne" %% "simudyne-core-abm" % simudyneVersion
+  "simudyne" %% "simudyne-core-abm" % simudyneVersion,
+  "simudyne" %% "simudyne-core-abm-spark" % simudyneVersion
 )
+
+lazy val commonSettings = Seq(
+  test in assembly := {},
+  assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", xs@_*) => MergeStrategy.discard
+    //akka configuration files
+    case PathList("reference.conf") => MergeStrategy.concat
+    case _ => MergeStrategy.first
+  },
+  assemblyJarName in assembly := "simudyne-fatjar.jar",
+  assemblyShadeRules in assembly := Seq(
+    ShadeRule.rename("org.json4s.**" -> "shaded.json4s.@1").inAll
+  )
+)
+
+lazy val root = (project in file("."))
+  .settings(commonSettings)
