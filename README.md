@@ -27,8 +27,26 @@ Server.setPort(8081);
 
 - Start one or several slaves : `./sbin/start-slave.sh <sparkMasterURL>`
 
-- Set the Spark master URL in the `setup()` method of your model 
-
 - Build your fatJar file with `sbt assembly`, it will be in `target/scala-2.11`
 
-- Submit the fatJar using the url from last step: `spark-submit --class Main --master <sparkMasterURL> --deploy-mode client simudyne-fatjar.jar`
+- Add `core-abm.backend-implementation=simudyne.core.graph.spark.SparkGraphBackend` to SimuydneSDK.properties file
+
+- Use the SimudyneSDK.properties file to set the master URL and other settings
+
+- Upload your fatJar file and simudyneSDK.properties file to your master node.
+
+- SSH into your master node and then submit the fatJar using the url from last step:
+```text
+spark2-submit --class Main --master <sparkMasterURL>  --deploy-mode client --num-executors 30 --executor-cores 5 --executor-memory 30G --conf "spark.executor.extraJavaOptions=-XX:+UseG1GC" --files simudyneSDK.properties name-of-the-fat-jar.jar
+```
+- You should set `--num-executors`,  `--executor-cores`,  `--executor-memory` parameters according your own cluster resources.
+Useful resource : [http://blog.cloudera.com/blog/2015/03/how-to-tune-your-apache-spark-jobs-part-2/](http://blog.cloudera.com/blog/2015/03/how-to-tune-your-apache-spark-jobs-part-2/)
+
+
+## Running multiple runs distributed with spark
+
+- Add `core-runner.runner-backend = simudyne.core.runner.spark.SparkRunnerBackend` to SimuydneSDK.properties file
+
+- Run project on Spark as above
+
+- Use console multirun setting to run model multiple times

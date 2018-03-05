@@ -6,9 +6,6 @@ import simudyne.core.annotations.Input;
 import simudyne.core.annotations.Variable;
 
 public class CreditCard implements Model {
-  @Constant(name = "Initial Balance")
-  public long initial_balance = 400;
-
   @Constant public long credit_limit = 0;
 
   @Input public boolean isSpending = true;
@@ -22,8 +19,8 @@ public class CreditCard implements Model {
   @Input(name = "Interest Rate")
   public float interest = 0.03f;
 
-  @Variable(name = "Balance")
-  public float balance = 0;
+  @Variable(name = "Balance", initializable = true)
+  public float balance = 400;
 
   @Variable(name = "Interest Charge")
   public float interest_charge() {
@@ -37,8 +34,8 @@ public class CreditCard implements Model {
 
   // SDModel Interface Methods
 
-  public void setup() {
-    balance = initial_balance;
+  @Override
+  public void step() {
   }
 
   public void calculate() {
