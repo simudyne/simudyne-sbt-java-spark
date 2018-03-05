@@ -19,11 +19,7 @@ These settings are located in `.credentials` file.
 - Start Spark standalone master server : `./sbin/start-master.sh`
 
 - Check the spark Master URL at localhost:8080/ (make sure the console is running on a different port),
-you can set the console host and port in your `Main` class with :
-```java
-Server.setHostName("0.0.0.0");
-Server.setPort(8081);
-```
+you can set the console host and port in your `simudyneSDK.properties` file in the `NEXUS-SERVER` section.
 
 - Start one or several slaves : `./sbin/start-slave.sh <sparkMasterURL>`
 
