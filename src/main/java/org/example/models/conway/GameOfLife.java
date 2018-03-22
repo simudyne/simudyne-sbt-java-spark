@@ -1,59 +1,58 @@
 package org.example.models.conway;
 
-import simudyne.core.Model;
-import simudyne.core.abm.AgentSystem;
+import simudyne.core.abm.AgentBasedModel;
 import simudyne.core.abm.GlobalState;
-import simudyne.core.abm.Sequence;
-import simudyne.core.abm.topology.Group;
+import simudyne.core.abm.Group;
 import simudyne.core.annotations.Constant;
-import simudyne.core.annotations.Custom;
 import simudyne.core.annotations.Input;
+import simudyne.core.annotations.ModelSettings;
 import simudyne.core.annotations.Variable;
-import simudyne.core.graph.BlankLink;
-import simudyne.core.graph.LongAccumulator;
 
-public class GameOfLife implements Model {
-  @Custom
-  public AgentSystem<Globals> grid = AgentSystem.create(new Globals());
-
-  private LongAccumulator bornAccumulator = grid.createLongAccumulator("born");
-  private LongAccumulator diedAccumulator = grid.createLongAccumulator("died");
-
+@ModelSettings(macroStep = 25)
+public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
   public static final class Globals extends GlobalState {
-    @Constant
-    public float fillFactor = 0.25f;
+    @Constant float fillFactor = 0.25f;
   }
+
+  @Input boolean distributed = false;
+  @Input int gridSize = 20;
 
   @Variable
-  public long aliveCells() {
-    return grid.select(Cell.class).filter(agent -> agent.alive).count();
+  long aliveCells() {
+    return select(Cell.class).filter(agent -> agent.alive).count();
   }
 
-  @Input
-  public int gridSize = 100;
+  {
+    registerAgentType(Cell.class);
+    registerMessageTypes(Messages.Start.class, Messages.Neighbour.class);
+
+    createLongAccumulator("born");
+    createLongAccumulator("died");
+  }
 
   public void setup() {
+    if (distributed) {
+      getConfig()
+          .setString(
+              "core-abm.backend-implementation", "simudyne.core.graph.spark.SparkGraphBackend");
+    }
 
-    grid.registerAgentType(Cell.class);
-    grid.registerMessageTypes(Boolean.class);
+    Group<Cell> cellsGroup =
+        generateGroup(
+            Cell.class,
+            gridSize * gridSize,
+            cell -> {
+              cell.alive = cell.getPrng().uniform(0.0, 1.0).sample() < cell.getGlobals().fillFactor;
+            });
 
-    Group cellsGroup =
-      grid.generateGroup(
-        Cell.class,
-        gridSize * gridSize,
-        cell -> {
-          cell.alive = cell.getPrng().uniform(0.0, 1.0).sample() < cell.getGlobals().fillFactor;
-        });
+    cellsGroup.gridConnected().wrapped().mooreConnected();
 
-    cellsGroup.gridConnected(BlankLink.class).wrapped().mooreConnected();
-
-    grid.setup();
+    super.setup();
   }
 
   public void step() {
-    bornAccumulator.reset();
-    diedAccumulator.reset();
+    super.step();
 
-    Sequence.create(Cell.action(Cell::onStart), Cell.action(Cell::onNeighbourMessages)).run(grid);
+    run(Cell.action(Cell::onStart), Cell.action(Cell::onNeighbourMessages));
   }
 }
