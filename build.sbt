@@ -10,7 +10,7 @@ credentials += Credentials(file(".credentials"))
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8")
 
-lazy val simudyneVersion = "2.0.0"
+lazy val simudyneVersion = "2.0.1"
 lazy val sparkVersion = "2.2.1"
 libraryDependencies ++= Seq(
   "simudyne" %% "simudyne-nexus-server" % simudyneVersion,
