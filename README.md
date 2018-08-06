@@ -16,6 +16,8 @@ These settings are located in `.credentials` file.
 
 - Install Spark
 
+### Running on Spark standalone
+
 - Start Spark standalone master server : `./sbin/start-master.sh`
 
 - Check the spark Master URL at localhost:8080/ (make sure the console is running on a different port),
@@ -23,19 +25,35 @@ you can set the console host and port in your `simudyneSDK.properties` file in t
 
 - Start one or several slaves : `./sbin/start-slave.sh <sparkMasterURL>`
 
-- Build your fatJar file with `sbt assembly`, it will be in `target/scala-2.11`
+### Running on Spark on Yarn
 
-- Add `core-abm.backend-implementation=simudyne.core.graph.spark.SparkGraphBackend` to SimuydneSDK.properties file
+- Your <sparkMasterURL> will be `yarn`.
+
+- We have tested with: 
+  * Cloudera CDH 5.13.1, 2.3.0.cloudera2
+  * Cloudera CDH 5.15.0, 2.2.0.cloudera2
+  * Cloudera CDH 5.15.0, 2.3.0.cloudera3
+
+### Next steps
 
 - Use the SimudyneSDK.properties file to set the master URL and other settings
 
-- Upload your fatJar file and simudyneSDK.properties file to your master node.
+- Add `core-abm.backend-implementation=simudyne.core.graph.spark.SparkGraphBackend` to SimuydneSDK.properties file
 
-- SSH into your master node and then submit the fatJar using the url from last step:
-```text
-spark2-submit --class Main --master <sparkMasterURL>  --deploy-mode client --num-executors 30 --executor-cores 5 --executor-memory 30G --conf "spark.executor.extraJavaOptions=-XX:+UseG1GC" --files simudyneSDK.properties name-of-the-fat-jar.jar
+- Build your fatJar file with `sbt assembly`, it will be in `target/scala-2.11`
+
+```shell
+hdfs dfs -put -f target/scala-2.11/simudyne-fatjar.jar /user/${USER}/
 ```
-- You should set `--num-executors`,  `--executor-cores`,  `--executor-memory` parameters according your own cluster resources.
+
+- SSH into your master node and then submit the fatJar using the url from last step: 
+```shell
+spark2-submit --master yarn --deploy-mode client \
+--conf "spark.executor.extraJavaOptions=-XX:+UseG1GC" --class Main \
+--files simudyneSDK.properties hdfs:///user/${USER}/simudyne-fatjar.jar
+```
+
+- You should set `--num-executors`,  `--executor-cores`, `--executor-memory` parameters according your own cluster resources.
 Useful resource : [http://blog.cloudera.com/blog/2015/03/how-to-tune-your-apache-spark-jobs-part-2/](http://blog.cloudera.com/blog/2015/03/how-to-tune-your-apache-spark-jobs-part-2/)
 
 
