@@ -1,4 +1,4 @@
-package org.example.models.credit_card;
+package org.example.models.creditcard;
 
 import simudyne.core.Model;
 import simudyne.core.annotations.Constant;
