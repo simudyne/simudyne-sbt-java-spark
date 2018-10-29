@@ -1,10 +1,10 @@
 package org.example.models.trading;
 
+import java.util.Random;
 import simudyne.core.abm.Action;
 import simudyne.core.abm.Agent;
 import simudyne.core.annotations.Variable;
-
-import java.util.Random;
+import simudyne.core.functions.SerializableConsumer;
 
 public class Trader extends Agent<TradingModel.Globals> {
 
@@ -12,9 +12,12 @@ public class Trader extends Agent<TradingModel.Globals> {
 
   @Variable double tradingThresh = random.nextGaussian();
 
+  private static Action<Trader> action(SerializableConsumer<Trader> consumer) {
+    return Action.create(Trader.class, consumer);
+  }
+
   public static Action<Trader> processInformation() {
-    return Action.create(
-        Trader.class,
+    return action(
         trader -> {
           double informationSignal = trader.getGlobals().informationSignal;
 
@@ -29,23 +32,23 @@ public class Trader extends Agent<TradingModel.Globals> {
   }
 
   public static Action<Trader> updateThreshold() {
-    return Action.create(
-        Trader.class,
+    return action(
         trader -> {
           double updateFrequency = trader.getGlobals().updateFrequency;
           if (random.nextDouble() <= updateFrequency) {
-            trader.tradingThresh = trader.getMessageOfType(Double.class).getBody();
+            trader.tradingThresh =
+                trader.getMessageOfType(Messages.MarketPriceChange.class).getBody();
           }
         });
   }
 
   private void buy() {
     getLongAccumulator("buys").add(1);
-    broadcastMessage(new Messages.BuyOrderPlaced());
+    getLinks(Links.TradeLink.class).send(Messages.BuyOrderPlaced.class);
   }
 
   private void sell() {
     getLongAccumulator("sells").add(1);
-    broadcastMessage(new Messages.SellOrderPlaced());
+    getLinks(Links.TradeLink.class).send(Messages.SellOrderPlaced.class);
   }
 }

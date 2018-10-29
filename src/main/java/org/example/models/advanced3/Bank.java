@@ -1,10 +1,9 @@
 package org.example.models.advanced3;
 
+import java.util.List;
 import simudyne.core.abm.Action;
 import simudyne.core.abm.Agent;
-import simudyne.core.graph.Message;
-
-import java.util.List;
+import simudyne.core.functions.SerializableConsumer;
 
 public class Bank extends Agent<MortgageModel.Globals> {
   private int debt = 0;
@@ -25,102 +24,105 @@ public class Bank extends Agent<MortgageModel.Globals> {
     return assets - debt;
   }
 
-  public static Action<Bank> processApplication =
-      new Action<>(
-          Bank.class,
+  private static Action<Bank> action(SerializableConsumer<Bank> consumer) {
+    return Action.create(Bank.class, consumer);
+  }
+
+  static Action<Bank> processApplication =
+      action(
           bank ->
               bank.getMessagesOfType(Messages.MortgageApplication.class)
                   .stream()
-                  .filter(
-                      m -> m.getBody().amount / m.getBody().income <= bank.getGlobals().LTILimit)
-                  .filter(
-                      m ->
-                          m.getBody().wealth
-                              > m.getBody().amount * (1 - bank.getGlobals().LTVLimit))
+                  .filter(m -> m.amount / m.income <= bank.getGlobals().LTILimit)
+                  .filter(m -> m.wealth > m.amount * (1 - bank.getGlobals().LTVLimit))
                   .forEach(
                       m -> {
                         int totalAmount =
-                            (int)
-                                (m.getBody().amount * Math.pow(bank.interest(), bank.termInYears));
+                            (int) (m.amount * Math.pow(bank.interest(), bank.termInYears));
 
-                        bank.sendMessage(
-                            new Messages.ApplicationSuccessful(
-                                totalAmount, bank.termInMonths, totalAmount / bank.termInMonths),
-                            m.getSender());
+                        bank.send(
+                                Messages.ApplicationSuccessful.class,
+                                newMessage -> {
+                                  newMessage.amount = totalAmount;
+                                  newMessage.termInMonths = bank.termInMonths;
+                                  newMessage.repayment = totalAmount / bank.termInMonths;
+                                })
+                            .to(m.getSender());
                         bank.nbMortgages += 1;
-                        bank.assets += m.getBody().amount;
-                        bank.debt += m.getBody().amount;
+                        bank.assets += m.amount;
+                        bank.debt += m.amount;
                       }));
 
-  public void accumulateIncome() {
+  void accumulateIncome() {
     income = 0;
-
-    getMessagesOfType(Messages.Payment.class)
-        .forEach(payment -> income += payment.getBody().repayment);
+    getMessagesOfType(Messages.Payment.class).forEach(payment -> income += payment.repayment);
 
     double NIM = 0.25;
     assets += (income * NIM);
   }
 
-  public void processArrears() {
-    List<Message<Messages.Arrears>> arrears = getMessagesOfType(Messages.Arrears.class);
-
+  void processArrears() {
+    List<Messages.Arrears> arrears = getMessagesOfType(Messages.Arrears.class);
     // Count bad loans
-
-    arrears.forEach(
-        arrear -> {
-          if (arrear.getBody().monthsInArrears > 3) {
-            getLongAccumulator("badLoans").add(1);
-          }
-        });
-
+    calcBadLoans(arrears);
     // Calculate provisions
-
-    double stage1Provisions =
-        arrears
-            .stream()
-            .filter(m -> m.getBody().monthsInArrears <= 1)
-            .mapToInt(m -> m.getBody().outstandingBalance)
-            .sum();
-
-    double stage2Provisions =
-        arrears
-            .stream()
-            .filter(m -> m.getBody().monthsInArrears > 1 && m.getBody().monthsInArrears < 3)
-            .mapToInt(m -> m.getBody().outstandingBalance)
-            .sum();
-
+    double stage1Provisions = calcStageOneProvisions(arrears);
+    double stage2Provisions = calcStageTwoProvisions(arrears);
     getGlobals().stage1Provisions = stage1Provisions * 0.01;
     getGlobals().stage2Provisions = stage2Provisions * 0.03;
 
-    // Write off loans and calculate impairments
+    writeLoans(arrears);
+  }
 
+  private void calcBadLoans(List<Messages.Arrears> arrears) {
+    arrears.forEach(
+        arrear -> {
+          if (arrear.monthsInArrears > 3) {
+            getLongAccumulator("badLoans").add(1);
+          }
+        });
+  }
+
+  private void writeLoans(List<Messages.Arrears> arrears) {
     impairments = 0;
-
     arrears.forEach(
         arrear -> {
           // A mortgage is written off if it is more than 6 months in arrears.
-          if (arrear.getBody().monthsInArrears > 6) {
-            impairments += arrear.getBody().outstandingBalance;
+          if (arrear.monthsInArrears > 6) {
+            impairments += arrear.outstandingBalance;
 
             getLongAccumulator("writeOffs").add(1);
 
             // Notify the sender their loan was defaulted.
-            sendMessage(true, arrear.getSender());
+            send(Messages.LoanDefault.class).to(arrear.getSender());
           }
         });
-
-    // Remove any impairments from our assets total.
-    // Note that the debt from the written off loan remains.
     assets -= impairments;
   }
 
+  private int calcStageTwoProvisions(List<Messages.Arrears> arrears) {
+    return arrears
+        .stream()
+        .filter(m -> m.monthsInArrears > 1 && m.monthsInArrears < 3)
+        .mapToInt(m -> m.outstandingBalance)
+        .sum();
+  }
+
+  private int calcStageOneProvisions(List<Messages.Arrears> arrears) {
+    return arrears
+        .stream()
+        .filter(m -> m.monthsInArrears <= 1)
+        .mapToInt(m -> m.outstandingBalance)
+        .sum();
+  }
+
   /** Remove any mortgages that have closed from the books. */
-  public void clearPaidMortgages() {
+  void clearPaidMortgages() {
     int balancePaidOff = 0;
 
-    for (Message<Messages.CloseMortgage> close : getMessagesOfType(Messages.CloseMortgage.class)) {
-      balancePaidOff += close.getBody().amount;
+    for (Messages.CloseMortgageAmount closeAmount :
+        getMessagesOfType(Messages.CloseMortgageAmount.class)) {
+      balancePaidOff += closeAmount.getBody();
       nbMortgages -= 1;
     }
 

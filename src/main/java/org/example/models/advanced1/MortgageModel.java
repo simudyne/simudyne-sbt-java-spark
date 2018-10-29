@@ -5,15 +5,14 @@ import simudyne.core.abm.AgentBasedModel;
 import simudyne.core.abm.GlobalState;
 import simudyne.core.abm.Group;
 import simudyne.core.annotations.Input;
+import simudyne.core.graph.LongAccumulator;
 
 public class MortgageModel extends AgentBasedModel<GlobalState> {
-  {
-    createLongAccumulator("equity", "Bank Equity (£)");
-    createLongAccumulator("assets");
-  }
+  LongAccumulator accEquity = createLongAccumulator("equity", "Bank Equity (£)");
+  LongAccumulator accAssets = createLongAccumulator("assets", "Assets");
 
   @Input(name = "Number of Households")
-  long nbHouseholds = 100;
+  private long nbHouseholds = 100;
 
   @Override
   public void setup() {
@@ -22,7 +21,7 @@ public class MortgageModel extends AgentBasedModel<GlobalState> {
     Group<Bank> bankGroup = generateGroup(Bank.class, 1);
 
     // Each household is connected to 1 bank
-    householdGroup.partitionConnected(bankGroup);
+    householdGroup.partitionConnected(bankGroup, Links.BankLink.class);
 
     super.setup();
   }
@@ -39,10 +38,6 @@ public class MortgageModel extends AgentBasedModel<GlobalState> {
               household.consume();
               household.payMortgage();
             }),
-        Action.create(
-            Bank.class,
-            bank -> {
-              bank.updateBalanceSheet();
-            }));
+        Action.create(Bank.class, Bank::updateBalanceSheet));
   }
 }

@@ -1,19 +1,19 @@
 package org.example.models.advanced1;
 
+import java.util.List;
+import org.example.models.advanced1.Messages.RepaymentAmount;
 import simudyne.core.abm.Agent;
 import simudyne.core.abm.GlobalState;
 import simudyne.core.annotations.Variable;
-import simudyne.core.graph.Message;
-
-import java.util.List;
 
 public class Bank extends Agent<GlobalState> {
-  @Variable int debt = 90;
+  @Variable private int debt = 90;
 
-  public void updateBalanceSheet() {
+  void updateBalanceSheet() {
     int assets = 0;
-    List<Message<Integer>> paymentMessages = getMessagesOfType(Integer.class);
-    for (Message<Integer> payment : paymentMessages) {
+    List<RepaymentAmount> paymentMessages =
+        getMessagesOfType(Messages.RepaymentAmount.class);
+    for (Messages.RepaymentAmount payment : paymentMessages) {
       assets += payment.getBody();
     }
 

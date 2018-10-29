@@ -23,6 +23,9 @@ public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
   }
 
   {
+    registerAgentType(Cell.class);
+    registerMessageTypes(Messages.Start.class, Messages.Alive.class);
+
     createLongAccumulator("born");
     createLongAccumulator("died");
   }
@@ -42,7 +45,7 @@ public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
               cell.alive = cell.getPrng().uniform(0.0, 1.0).sample() < cell.getGlobals().fillFactor;
             });
 
-    cellsGroup.gridConnected().wrapped().mooreConnected();
+    cellsGroup.gridConnected(Links.Neighbour.class).wrapped().mooreConnected();
 
     super.setup();
   }
