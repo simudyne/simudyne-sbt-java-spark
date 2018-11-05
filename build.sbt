@@ -9,15 +9,16 @@ resolvers += "Artifactory Realm" at "https://simudyne.jfrog.io/simudyne/releases
 credentials += Credentials(file(".credentials"))
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8")
+scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked")
 
-lazy val simudyneVersion = "2.0.4"
+lazy val simudyneVersion = "2.1.0"
 lazy val sparkVersion = "2.2.1"
 libraryDependencies ++= Seq(
-  "simudyne" %% "simudyne-nexus-server" % simudyneVersion,
-  "simudyne" %% "simudyne-core" % simudyneVersion,
-  "simudyne" %% "simudyne-core-abm" % simudyneVersion,
-  "simudyne" %% "simudyne-core-graph-spark" % simudyneVersion,
-  "simudyne" %% "simudyne-core-runner-spark" % simudyneVersion
+  "simudyne" %% "simudyne-nexus-server" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
+  "simudyne" %% "simudyne-core" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
+  "simudyne" %% "simudyne-core-abm" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
+  "simudyne" %% "simudyne-core-graph-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
+  "simudyne" %% "simudyne-core-runner-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j")
 )
 
 lazy val commonSettings = Seq(
