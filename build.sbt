@@ -14,17 +14,26 @@ scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked
 lazy val simudyneVersion = "2.1.0"
 lazy val sparkVersion = "2.2.1"
 libraryDependencies ++= Seq(
-  "simudyne" %% "simudyne-nexus-server" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
-  "simudyne" %% "simudyne-core" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
-  "simudyne" %% "simudyne-core-abm" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
-  "simudyne" %% "simudyne-core-graph-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
-  "simudyne" %% "simudyne-core-runner-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j")
+  "simudyne" %% "simudyne-nexus-server" % simudyneVersion,
+  "simudyne" %% "simudyne-core" % simudyneVersion,
+  "simudyne" %% "simudyne-core-abm" % simudyneVersion,
+  "simudyne" %% "simudyne-core-graph-spark" % simudyneVersion,
+  "simudyne" %% "simudyne-core-runner-spark" % simudyneVersion
 )
 
 lazy val commonSettings = Seq(
   test in assembly := {},
   assemblyMergeStrategy in assembly := {
     case PathList("META-INF", xs@_*) => MergeStrategy.discard
+    // dependencies included in spark
+    case PathList("org", "slf4j", xs@_*) => MergeStrategy.discard
+    case PathList("com", "fasterxml", "jackson", "core", xs@_*) => MergeStrategy.discard
+    case PathList("com", "twitter", xs@_*) => MergeStrategy.discard
+    case PathList("org", "apache", "commons", xs@_*) => MergeStrategy.discard
+    case PathList("org", "json4s", xs@_*) => MergeStrategy.discard
+    case PathList("org", "xerial", xs@_*) => MergeStrategy.discard
+    case PathList("org", "scala-lang", xs@_*) => MergeStrategy.discard
+      
     //akka configuration files
     case PathList("reference.conf") => MergeStrategy.concat
     case _ => MergeStrategy.first
