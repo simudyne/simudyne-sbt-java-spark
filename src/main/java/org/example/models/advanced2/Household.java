@@ -101,7 +101,7 @@ public class Household extends Agent<GlobalState> {
   void incomeShock() {
     income += 200 * getPrng().gaussian(0, 1).sample();
 
-    if (income < 0) {
+    if (income <= 0) {
       income = 1;
     }
   }
