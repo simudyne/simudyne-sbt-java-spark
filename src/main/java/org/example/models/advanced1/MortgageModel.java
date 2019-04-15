@@ -15,6 +15,12 @@ public class MortgageModel extends AgentBasedModel<GlobalState> {
   private long nbHouseholds = 100;
 
   @Override
+  public void init() {
+    registerAgentTypes(Bank.class, Household.class);
+    registerLinkTypes(Links.BankLink.class);
+  }
+
+  @Override
   public void setup() {
     // Create our agent groups
     Group<Household> householdGroup = generateGroup(Household.class, nbHouseholds);

@@ -1,4 +1,4 @@
-name := "simudyne-sbt-java"
+name := "simudyne-sbt-java-spark"
 
 version := "0.1"
 
@@ -11,13 +11,14 @@ credentials += Credentials(file(".credentials"))
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8")
 scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked")
 
-lazy val simudyneVersion = "2.1.0"
+lazy val simudyneVersion = "2.2.0"
 lazy val sparkVersion = "2.2.1"
 libraryDependencies ++= Seq(
   "simudyne" %% "simudyne-nexus-server" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
   "simudyne" %% "simudyne-core" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
   "simudyne" %% "simudyne-core-abm" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
   "simudyne" %% "simudyne-core-graph-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
+  "simudyne" %% "simudyne-core-graph-distributed" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),
   "simudyne" %% "simudyne-core-runner-spark" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j")
 )
 

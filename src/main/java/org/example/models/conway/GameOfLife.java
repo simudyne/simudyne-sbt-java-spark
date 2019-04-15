@@ -10,7 +10,9 @@ import simudyne.core.annotations.Variable;
 
 @ModelSettings(macroStep = 25)
 public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
+
   public static final class Globals extends GlobalState {
+
     @Constant float fillFactor = 0.25f;
   }
 
@@ -23,7 +25,7 @@ public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
   }
 
   {
-    registerAgentType(Cell.class);
+    registerAgentTypes(Cell.class);
     registerMessageTypes(Messages.Start.class, Messages.Alive.class);
 
     createLongAccumulator("born");

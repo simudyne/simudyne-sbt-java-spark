@@ -18,19 +18,19 @@ public class Cell extends Agent<GameOfLife.Globals> {
   }
 
   public void onNeighbourMessages() {
-    long count = 0;
+    long liveNeighbours = 0;
 
     List<Messages.Alive> messages = getMessagesOfType(Messages.Alive.class);
     for (Messages.Alive m : messages) {
       if (m.getBody()) {
-        count += 1;
+        liveNeighbours += 1;
       }
     }
 
-    if (alive && (count < 2 || count > 3)) {
+    if (alive && (liveNeighbours < 2 || liveNeighbours > 3)) {
       getLongAccumulator("died").add(1);
       alive = false;
-    } else if (!alive && count == 3) {
+    } else if (!alive && liveNeighbours == 3) {
       getLongAccumulator("born").add(1);
       alive = true;
     }
