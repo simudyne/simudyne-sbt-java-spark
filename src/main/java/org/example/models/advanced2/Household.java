@@ -5,6 +5,7 @@ import simudyne.core.abm.Agent;
 import simudyne.core.abm.GlobalState;
 import simudyne.core.annotations.Variable;
 import simudyne.core.functions.SerializableConsumer;
+import simudyne.core.graph.Message;
 
 public class Household extends Agent<GlobalState> {
   @Variable int income;

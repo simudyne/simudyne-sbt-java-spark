@@ -1,9 +1,10 @@
 package org.example.models.advanced3;
 
-import java.util.List;
 import simudyne.core.abm.Action;
 import simudyne.core.abm.Agent;
 import simudyne.core.functions.SerializableConsumer;
+
+import java.util.List;
 
 public class Bank extends Agent<MortgageModel.Globals> {
   private int debt = 0;

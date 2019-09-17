@@ -11,7 +11,7 @@ credentials += Credentials(file(".credentials"))
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8")
 scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked")
 
-lazy val simudyneVersion = "2.2.0"
+lazy val simudyneVersion = "2.3.0"
 lazy val sparkVersion = "2.2.1"
 libraryDependencies ++= Seq(
   "simudyne" %% "simudyne-nexus-server" % simudyneVersion excludeAll ExclusionRule(organization = "org.slf4j"),

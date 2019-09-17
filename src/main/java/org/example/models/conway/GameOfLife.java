@@ -10,13 +10,10 @@ import simudyne.core.annotations.Variable;
 
 @ModelSettings(macroStep = 25)
 public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
-
   public static final class Globals extends GlobalState {
-
     @Constant float fillFactor = 0.25f;
   }
 
-  @Input boolean distributed = false;
   @Input int gridSize = 20;
 
   @Variable
@@ -26,19 +23,13 @@ public class GameOfLife extends AgentBasedModel<GameOfLife.Globals> {
 
   {
     registerAgentTypes(Cell.class);
-    registerMessageTypes(Messages.Start.class, Messages.Alive.class);
+    registerLinkTypes(Links.Neighbour.class);
 
     createLongAccumulator("born");
     createLongAccumulator("died");
   }
 
   public void setup() {
-    if (distributed) {
-      getConfig()
-          .setString(
-              "core-abm.backend-implementation", "simudyne.core.graph.spark.SparkGraphBackend");
-    }
-
     Group<Cell> cellsGroup =
         generateGroup(
             Cell.class,

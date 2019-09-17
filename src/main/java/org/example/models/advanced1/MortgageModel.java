@@ -14,8 +14,7 @@ public class MortgageModel extends AgentBasedModel<GlobalState> {
   @Input(name = "Number of Households")
   private long nbHouseholds = 100;
 
-  @Override
-  public void init() {
+  {
     registerAgentTypes(Bank.class, Household.class);
     registerLinkTypes(Links.BankLink.class);
   }

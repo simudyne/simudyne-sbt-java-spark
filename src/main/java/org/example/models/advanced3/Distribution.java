@@ -1,10 +1,11 @@
 package org.example.models.advanced3;
 
+import org.apache.commons.math3.random.EmpiricalDistribution;
+import simudyne.core.rng.SeededRandom;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.DoubleStream;
-import org.apache.commons.math3.random.EmpiricalDistribution;
-import simudyne.core.rng.SeededRandom;
 
 class Distribution {
   public class BucketInfo {

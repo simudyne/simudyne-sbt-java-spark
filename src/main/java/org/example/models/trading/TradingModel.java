@@ -1,12 +1,13 @@
 package org.example.models.trading;
 
-import java.util.Random;
 import simudyne.core.abm.AgentBasedModel;
 import simudyne.core.abm.GlobalState;
 import simudyne.core.abm.Group;
 import simudyne.core.annotations.Constant;
 import simudyne.core.annotations.Input;
 import simudyne.core.annotations.ModelSettings;
+
+import java.util.Random;
 
 @ModelSettings(macroStep = 100)
 public class TradingModel extends AgentBasedModel<TradingModel.Globals> {
@@ -28,6 +29,8 @@ public class TradingModel extends AgentBasedModel<TradingModel.Globals> {
   }
 
   {
+    registerAgentTypes(Market.class, Trader.class);
+    registerLinkTypes(Links.TradeLink.class);
     createLongAccumulator("buys", "Number of buy orders");
     createLongAccumulator("sells", "Number of sell orders");
     createDoubleAccumulator("price", "Price");
